@@ -23,9 +23,8 @@ import { userExist, userNotExist } from "./redux/reducer/userReducer";
 import { UserReducerInitialState } from "./types/reducer-types";
 
 //admin-styles
-
 const Dashboard = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/dashboard")
+  () => import("../../ecommerce-frontend/src/pages/admin/dashboard.tsx")
 );
 const Products = lazy(
   () => import("../../ecommerce-frontend/src/pages/admin/products")
