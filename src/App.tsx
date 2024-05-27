@@ -1,6 +1,15 @@
+import { onAuthStateChanged } from "firebase/auth";
 import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Header } from "./components/Header";
+import Loader from "./components/loader";
+import ProtectedRoute from "./components/Protected-Route";
+import { auth } from "./firebase";
+import { getUser } from "./redux/api/userAPI";
+import { userExist, userNotExist } from "./redux/reducer/userReducer";
+import { RootState } from "./redux/store";
 
 const Home = lazy(() => import("./pages/Home"));
 const Search = lazy(() => import("./pages/Search"));
@@ -12,66 +21,28 @@ const OrderDetails = lazy(() => import("./pages/OrderDetails"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 
-import { onAuthStateChanged } from "firebase/auth";
-import { useDispatch, useSelector } from "react-redux";
-import { Header } from "./components/Header";
-import ProtectedRoute from "./components/Protected-Route";
-import Loader from "./components/loader";
-import { auth } from "./firebase";
-import { getUser } from "./redux/api/userAPI";
-import { userExist, userNotExist } from "./redux/reducer/userReducer";
-import { UserReducerInitialState } from "./types/reducer-types";
-
-//admin-styles
-const Dashboard = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/dashboard.tsx")
-);
-const Products = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/products")
-);
-const Customers = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/customers")
-);
-const Transaction = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/transaction")
-);
-const Barcharts = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/charts/barcharts")
-);
-const Piecharts = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/charts/piecharts")
-);
-const Linecharts = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/charts/linecharts")
-);
-const Coupon = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/apps/coupon")
-);
-const Stopwatch = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/apps/stopwatch")
-);
-const Toss = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/apps/toss")
-);
-const NewProduct = lazy(
-  () => import("../../ecommerce-frontend/src/pages/admin/management/newproduct")
-);
+// Admin Routes Importing
+const Dashboard = lazy(() => import("./pages/admin/dashboard"));
+const Products = lazy(() => import("./pages/admin/products"));
+const Customers = lazy(() => import("./pages/admin/customers"));
+const Transaction = lazy(() => import("./pages/admin/transaction"));
+const Barcharts = lazy(() => import("./pages/admin/charts/barcharts"));
+const Piecharts = lazy(() => import("./pages/admin/charts/piecharts"));
+const Linecharts = lazy(() => import("./pages/admin/charts/linecharts"));
+const Coupon = lazy(() => import("./pages/admin/apps/coupon"));
+const Stopwatch = lazy(() => import("./pages/admin/apps/stopwatch"));
+const Toss = lazy(() => import("./pages/admin/apps/toss"));
+const NewProduct = lazy(() => import("./pages/admin/management/newproduct"));
 const ProductManagement = lazy(
-  () =>
-    import(
-      "../../ecommerce-frontend/src/pages/admin/management/productmanagement"
-    )
+  () => import("./pages/admin/management/productmanagement")
 );
 const TransactionManagement = lazy(
-  () =>
-    import(
-      "../../ecommerce-frontend/src/pages/admin/management/transactionmanagement"
-    )
+  () => import("./pages/admin/management/transactionmanagement")
 );
 
 const App = () => {
   const { user, loading } = useSelector(
-    (state: { userReducer: UserReducerInitialState }) => state.userReducer
+    (state: RootState) => state.userReducer
   );
 
   const dispatch = useDispatch();
@@ -81,9 +52,7 @@ const App = () => {
       if (user) {
         const data = await getUser(user.uid);
         dispatch(userExist(data.user));
-      } else {
-        dispatch(userNotExist());
-      }
+      } else dispatch(userNotExist());
     });
   }, []);
 
@@ -91,15 +60,14 @@ const App = () => {
     <Loader />
   ) : (
     <Router>
-      {/* Add a header here */}
+      {/* Header */}
       <Header user={user} />
       <Suspense fallback={<Loader />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
           <Route path="/cart" element={<Cart />} />
-
-          {/* Not logged in Route */}
+          {/* Not logged In Route */}
           <Route
             path="/login"
             element={
@@ -108,8 +76,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
-          {/* Logged In user Routes */}
+          {/* Logged In User Routes */}
           <Route
             element={<ProtectedRoute isAuthenticated={user ? true : false} />}
           >
@@ -151,6 +118,7 @@ const App = () => {
               element={<TransactionManagement />}
             />
           </Route>
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
