@@ -1,4 +1,3 @@
-import { server } from "../redux/store"
 
 const Footer = () => {
   return (
